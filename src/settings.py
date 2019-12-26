@@ -1,9 +1,10 @@
 import json
+import log
 
-with open('settings.json') as jsonFile:
+with open('../settings.json') as jsonFile:
     rawSettings = json.load(jsonFile)
 
-print('settings:' + json.dumps(rawSettings))
+log.l('settings:' + json.dumps(rawSettings), log.Level.DEBUG)
 
 def get_default_value(setting_name):
     return ''
