@@ -1,5 +1,5 @@
-import daemon
+import one_shot
 import log
 
 log.set_log_level(log.Level.DEBUG)
-daemon.run()
+one_shot.run()
