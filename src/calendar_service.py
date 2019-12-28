@@ -8,8 +8,8 @@ from google.auth.transport.requests import Request
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
-TOKEN_FILE = '../token.pickle'
-CREDENTIALS_FILE = '../credentials.json'
+TOKEN_FILE = '../credentials/token.pickle'
+CREDENTIALS_FILE = '../credentials/google.json'
 
 
 def get_service():
