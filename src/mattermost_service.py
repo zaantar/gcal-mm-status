@@ -92,7 +92,3 @@ def set_user_suffix(user_login, suffix):
         data=json.dumps({'nickname': new_nickname})
     )
     return parse_response(response)
-
-
-set_user_status('jan', Status.DND)
-set_user_suffix('jan', 'test2')
