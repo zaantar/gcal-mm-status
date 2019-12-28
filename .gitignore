@@ -1,3 +1,6 @@
 .idea
 venv
+
+# google api
 credentials.json
+token.pickle
