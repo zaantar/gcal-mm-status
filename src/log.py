@@ -16,11 +16,19 @@ def set_log_level(new_level):
     current_log_level = new_level
 
 
+def stringify(to_stringify):
+    if list == type(to_stringify):
+        return "\n".join([stringify(item) for item in to_stringify])
+    if str != type(to_stringify):
+        return to_stringify.__str__()
+    return to_stringify
+
+
 def log(message, level=Level.INFO):
     global current_log_level
     if current_log_level > level:
         return
-    print(message)
+    print(stringify(message))
 
 
 def l(message, level):
