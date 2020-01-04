@@ -12,5 +12,5 @@ def run():
     log.l(events, log.Level.DEBUG)
 
     log.l('filtering...', log.Level.DEBUG)
-    filtered_events = event_parser.filter_events(events)
-    log.l(filtered_events, log.Level.DEBUG)
+    tasks = event_parser.events_to_tasks(events, test_user)
+    log.l(tasks, log.Level.DEBUG)

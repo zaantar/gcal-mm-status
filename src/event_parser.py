@@ -1,7 +1,11 @@
-import re
+import settings
+from task import Task
 
-WORK_FILTER = r"^work.*"
 
-
-def filter_events(events):
-    return [event for event in events if re.search(WORK_FILTER, event['summary'], re.IGNORECASE)]
+def events_to_tasks(events, user: settings.UserSettings):
+    tasks = []
+    for event in events:
+        for pattern in user.patterns:
+            if pattern.is_match(event['summary']):
+                tasks.append(Task(user.mattermost_login, event['start'], event['end'], pattern.status, pattern.suffix))
+    return tasks
