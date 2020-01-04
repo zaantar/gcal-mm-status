@@ -1,5 +1,6 @@
 .idea
 venv
+venv_linux
 settings.json
 
 /credentials/
