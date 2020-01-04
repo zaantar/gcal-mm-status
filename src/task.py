@@ -17,6 +17,7 @@ class Task:
     suffix = ''
     was_started = False
     was_completed = False
+    is_end_overlapping = False
 
     def __init__(self, user_login, start_time, end_time, status, suffix):
         self.user_login = user_login
@@ -40,7 +41,10 @@ class Task:
     def action_to_perform(self):
         if self.needs_to_start() and not self.was_started:
             return Action.START
-        if self.needs_to_finish() and not self.was_completed:
+        if self.was_started \
+                and self.needs_to_finish() \
+                and not self.was_completed \
+                and not self.is_end_overlapping:
             return Action.FINISH
         return Action.NONE
 

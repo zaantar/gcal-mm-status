@@ -16,6 +16,13 @@ def events_to_tasks(events, user: settings.UserSettings):
                     pattern.status,
                     pattern.suffix
                 ))
+    for i in range(1, len(tasks)):
+        current_task = tasks[i]
+        previous_task = tasks[i-1]
+
+        if current_task.start_time <= previous_task.end_time <= current_task.end_time:
+            previous_task.is_end_overlapping = True
+
     return tasks
 
 
