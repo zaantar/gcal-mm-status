@@ -4,8 +4,6 @@ import requests
 import enum
 import log
 
-log.set_log_level(log.Level.DEBUG)
-
 
 class Status(enum.Enum):
     ONLINE = 'online'
