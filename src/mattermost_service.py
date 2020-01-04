@@ -75,18 +75,35 @@ def set_user_status(user_login, status):
     return parse_response(response)
 
 
+def parse_nickname_parts(nickname):
+    nickname_parts = nickname.split('|')
+    if len(nickname_parts) == 0:
+        return ''
+    if len(nickname_parts) < 2:
+        return {'base': nickname_parts[0], 'suffix': ''}
+    return {'base': nickname_parts[0], 'suffix': nickname_parts[1]}
+
+
 def set_user_suffix(user_login, suffix):
     log.l('Setting the nickname suffix of user "%s" to "%s"...' % (user_login, suffix), log.Level.INFO)
     user = get_user(user_login)
     if user is None:
         return False
     prev_nickname = user['nickname']
-    nickname_base = prev_nickname.split('|')[0]
-    new_nickname = nickname_base + '|' + suffix
+    nickname_parts = parse_nickname_parts(prev_nickname)
+    new_nickname = nickname_parts['base'] + '|' + suffix
     log.l('Making the request...', log.Level.DEBUG)
     response = driver.client.make_request(
         'put',
         '/users/%s/patch' % get_user_id(user_login),
         data=json.dumps({'nickname': new_nickname})
     )
+    user['nickname'] = new_nickname
     return parse_response(response)
+
+
+def get_user_suffix(user_login):
+    user = get_user(user_login)
+    if user is None:
+        return ''
+    return parse_nickname_parts(user['nickname'])['suffix']
