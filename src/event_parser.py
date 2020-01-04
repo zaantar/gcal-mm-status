@@ -2,6 +2,7 @@ import settings
 from task import Task
 from dateutil import tz
 from dateutil.parser import parse
+from mattermost_service import Status
 
 
 def events_to_tasks(events, user: settings.UserSettings):
@@ -13,17 +14,23 @@ def events_to_tasks(events, user: settings.UserSettings):
                     user.mattermost_login,
                     google_date_to_datetime(event['start']),
                     google_date_to_datetime(event['end']),
-                    pattern.status,
+                    get_status_from_string(pattern.status),
                     pattern.suffix
                 ))
     for i in range(1, len(tasks)):
         current_task = tasks[i]
-        previous_task = tasks[i-1]
+        previous_task = tasks[i - 1]
 
         if current_task.start_time <= previous_task.end_time <= current_task.end_time:
             previous_task.is_end_overlapping = True
 
     return tasks
+
+
+def get_status_from_string(status_str):
+    if status_str not in Status:
+        return Status.ONLINE
+    return Status[status_str]
 
 
 def google_date_to_datetime(google_date):

@@ -1,6 +1,7 @@
 from enum import Enum
 from datetime import datetime
 import time_utils
+import mattermost_service
 
 
 class Action(Enum):
@@ -14,13 +15,14 @@ class Task:
     user_login = ''
     start_time: datetime = None
     end_time: datetime = None
-    status = ''
+    status: mattermost_service.Status = None
     suffix = ''
     was_started = False
     was_completed = False
     is_end_overlapping = False
+    suffix_to_restore = ''
 
-    def __init__(self, user_login, start_time, end_time, status, suffix):
+    def __init__(self, user_login, start_time: datetime, end_time: datetime, status: mattermost_service.Status, suffix):
         self.user_login = user_login
         self.start_time = start_time
         self.end_time = end_time
@@ -50,10 +52,24 @@ class Task:
                 return Action.REMOVE
             return Action.WAIT
 
-        if not self.was_completed and self.needs_to_finish():
-            return Action.FINISH
+        if not self.was_completed:
+            if self.needs_to_finish():
+                return Action.FINISH
+            return Action.WAIT
 
         return Action.REMOVE
 
     def is_actionable(self):
         return self.action_to_perform() != Action.WAIT
+
+    def do_action(self):
+        action = self.action_to_perform()
+        if Action.START == action:
+            self.suffix_to_restore = mattermost_service.get_user_suffix(self.user_login)
+            mattermost_service.set_user_status(self.user_login, self.status)
+            mattermost_service.set_user_suffix(self.user_login, self.suffix)
+            self.was_started = True
+        elif Action.FINISH == action:
+            mattermost_service.set_user_status(self.user_login, mattermost_service.Status.OFFLINE)
+            mattermost_service.set_user_suffix(self.user_login, self.suffix_to_restore)
+            self.was_completed = True

@@ -3,6 +3,7 @@ from log import log, Level as LogLevel
 import calendar_service
 import event_parser
 from task_queue import TaskQueue
+from task import Action
 
 
 def run():
@@ -23,4 +24,11 @@ def run():
     log('Printing ready tasks...')
     log(ready_tasks)
 
+    log('Performing actions and rescheduling...')
+    for task in ready_tasks:
+        task.do_action()
+        if Action.WAIT == task.action_to_perform():
+            queue.add(task)
+
+    log(queue._tasks)
     log('Done.')
