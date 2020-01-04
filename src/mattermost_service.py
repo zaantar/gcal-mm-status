@@ -51,7 +51,7 @@ def get_user(user_login):
 
 
 def parse_response(response):
-    is_ok = response.ok;
+    is_ok = response.ok
     if not is_ok:
         log.l("Response not OK: %d %s" % (response.status_code, response.reason), log.Level.INFO)
     return is_ok
