@@ -1,15 +1,18 @@
 from enum import Enum
+from datetime import datetime
+import time_utils
 
 
 class Action(Enum):
     START = 'start'
     FINISH = 'finish'
+    NONE = 'none'
 
 
 class Task:
     user_login = ''
-    start_time = None
-    end_time = None
+    start_time: datetime = None
+    end_time: datetime = None
     status = ''
     suffix = ''
     was_started = False
@@ -24,22 +27,22 @@ class Task:
         return
 
     def __str__(self) -> str:
-        return "For %s set status %s and suffix %s between %s and %s." % (
+        return "for %s set status %s and suffix %s between %s and %s." % (
             self.user_login, self.status, self.suffix, self.start_time, self.end_time
         )
 
     def needs_to_start(self):
-        return False
+        return time_utils.is_in_time_range(self.start_time)
 
     def needs_to_finish(self):
-        return False
+        return time_utils.is_in_time_range(self.end_time)
 
     def action_to_perform(self):
         if self.needs_to_start() and not self.was_started:
             return Action.START
         if self.needs_to_finish() and not self.was_completed:
             return Action.FINISH
-        return None
+        return Action.NONE
 
     def is_actionable(self):
         return self.action_to_perform() is not None

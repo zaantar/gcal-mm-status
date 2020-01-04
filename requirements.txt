@@ -1,3 +1,4 @@
+python-dateutil
 requests
 mattermostdriver
 google-api-python-client
