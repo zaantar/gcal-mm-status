@@ -7,10 +7,30 @@ def get_local_timezone():
     return dateutil.tz.tzlocal()
 
 
-def is_in_time_range(time: datetime):
-    threshold = time + timedelta(seconds=constants.POLLING_INTERVAL_SECONDS)
+def get_threshold(time: datetime):
+    return time + timedelta(seconds=constants.POLLING_INTERVAL_SECONDS)
+
+
+def get_delta_to_threshold(time: datetime):
     now_with_tz = datetime.now(tz=get_local_timezone())
-    delta = threshold - now_with_tz
-    if 0 <= delta.total_seconds() <= constants.POLLING_INTERVAL_SECONDS:
+    delta = get_threshold(time) - now_with_tz
+    return delta
+
+
+def get_delta_to_now(time: datetime):
+    now_with_tz = datetime.now(tz=get_local_timezone())
+    delta = now_with_tz - time
+    return delta
+
+
+def is_in_time_range(time: datetime):
+    if 0 <= get_delta_to_threshold(time).total_seconds() <= constants.POLLING_INTERVAL_SECONDS:
+        return True
+    return False
+
+
+def is_after_threshold(time: datetime):
+    delta = get_delta_to_now(time)
+    if constants.POLLING_INTERVAL_SECONDS < delta.total_seconds():
         return True
     return False

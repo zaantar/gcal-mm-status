@@ -6,7 +6,8 @@ import time_utils
 class Action(Enum):
     START = 'start'
     FINISH = 'finish'
-    NONE = 'none'
+    WAIT = 'wait'
+    REMOVE = 'remove'
 
 
 class Task:
@@ -36,17 +37,23 @@ class Task:
         return time_utils.is_in_time_range(self.start_time)
 
     def needs_to_finish(self):
-        return time_utils.is_in_time_range(self.end_time)
+        return time_utils.is_in_time_range(self.end_time) and not self.is_end_overlapping
+
+    def has_missed_start(self):
+        return time_utils.is_after_threshold(self.start_time)
 
     def action_to_perform(self):
-        if self.needs_to_start() and not self.was_started:
-            return Action.START
-        if self.was_started \
-                and self.needs_to_finish() \
-                and not self.was_completed \
-                and not self.is_end_overlapping:
+        if not self.was_started:
+            if self.needs_to_start():
+                return Action.START
+            elif self.has_missed_start():
+                return Action.REMOVE
+            return Action.WAIT
+
+        if not self.was_completed and self.needs_to_finish():
             return Action.FINISH
-        return Action.NONE
+
+        return Action.REMOVE
 
     def is_actionable(self):
-        return self.action_to_perform() is not None
+        return self.action_to_perform() != Action.WAIT
