@@ -1,3 +1,5 @@
+lockfile
+python-daemon
 python-dateutil
 requests
 mattermostdriver
