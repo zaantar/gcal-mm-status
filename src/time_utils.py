@@ -1,19 +1,18 @@
 from datetime import datetime, timedelta
 import dateutil
-import constants
 
 
 def get_local_timezone():
     return dateutil.tz.tzlocal()
 
 
-def get_threshold(time: datetime):
-    return time + timedelta(seconds=constants.POLLING_INTERVAL_SECONDS)
+def get_threshold(time: datetime, interval: int):
+    return time + timedelta(seconds=interval)
 
 
-def get_delta_to_threshold(time: datetime):
+def get_delta_to_threshold(time: datetime, interval: int):
     now_with_tz = datetime.now(tz=get_local_timezone())
-    delta = get_threshold(time) - now_with_tz
+    delta = get_threshold(time, interval) - now_with_tz
     return delta
 
 
@@ -23,14 +22,14 @@ def get_delta_to_now(time: datetime):
     return delta
 
 
-def is_in_time_range(time: datetime):
-    if 0 <= get_delta_to_threshold(time).total_seconds() <= constants.POLLING_INTERVAL_SECONDS:
+def is_in_time_range(time: datetime, interval: int):
+    if 0 <= get_delta_to_threshold(time, interval).total_seconds() <= interval:
         return True
     return False
 
 
-def is_after_threshold(time: datetime):
+def is_after_threshold(time: datetime, interval: int):
     delta = get_delta_to_now(time)
-    if constants.POLLING_INTERVAL_SECONDS < delta.total_seconds():
+    if interval < delta.total_seconds():
         return True
     return False

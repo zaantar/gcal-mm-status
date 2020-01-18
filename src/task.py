@@ -2,7 +2,7 @@ from enum import Enum
 from datetime import datetime
 import time_utils
 import mattermost_service
-
+import constants
 
 class Action(Enum):
     START = 'start'
@@ -36,13 +36,16 @@ class Task:
         )
 
     def needs_to_start(self):
-        return time_utils.is_in_time_range(self.start_time)
+        return time_utils.is_in_time_range(self.start_time, constants.TASK_QUEUE_CHECK_INTERVAL)
 
     def needs_to_finish(self):
-        return time_utils.is_in_time_range(self.end_time) and not self.is_end_overlapping
+        return (
+                time_utils.is_in_time_range(self.end_time, constants.TASK_QUEUE_CHECK_INTERVAL)
+                and not self.is_end_overlapping
+        )
 
     def has_missed_start(self):
-        return time_utils.is_after_threshold(self.start_time)
+        return time_utils.is_after_threshold(self.start_time, constants.TASK_QUEUE_CHECK_INTERVAL)
 
     def action_to_perform(self):
         if not self.was_started:
