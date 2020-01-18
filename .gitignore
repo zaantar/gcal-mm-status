@@ -2,5 +2,6 @@
 venv
 venv_linux
 settings.json
+__pycache__
 
 /credentials/
