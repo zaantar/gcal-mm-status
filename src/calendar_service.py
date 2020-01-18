@@ -8,6 +8,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 # noinspection PyPackageRequirements
 from google.auth.transport.requests import Request
 import settings
+from event import Event
 
 # If modifying these scopes, delete the token.pickle.* files.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
@@ -64,11 +65,8 @@ def get_upcoming_events(user: settings.UserSettings):
     if not events:
         return []
     for event in events:
-        # start = event['start'].get('dateTime', event['start'].get('date'))
-        formatted_events.append({
-            'start': event['start'],
-            'summary': event['summary'],
-            'end': event['end'],
-        })
+        formatted_events.append(
+            Event(id=event['id'], start=event['start'], end=event['end'], summary=event['summary'])
+        )
 
     return formatted_events
