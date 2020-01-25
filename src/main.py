@@ -7,6 +7,7 @@ import calendar_service
 import event_parser
 import settings
 from constants import constants
+from models.user_list import UserList
 
 event_list: [Event] = []
 task_queue = TaskQueue()
@@ -15,6 +16,8 @@ test_user = None
 
 last_calendar_check = None
 last_task_queue_check = None
+
+user_list: UserList = None
 
 
 def need_check(last_check, interval_seconds):
@@ -50,10 +53,16 @@ def update_events():
     return new_events
 
 
-def main():
-    global last_calendar_check, last_task_queue_check, task_queue, test_user
+def load_user_list():
+    global user_list
+    user_list = UserList([settings.get_user_settings(user_login) for user_login in settings.get_users()])
 
-    test_user = settings.get_user_settings('jan')
+
+def main():
+    global last_calendar_check, last_task_queue_check, task_queue, test_user, user_list
+
+    load_user_list()
+    test_user = user_list.users[0]
 
     log('Starting the main loop...', LogLevel.DEBUG)
     while True:

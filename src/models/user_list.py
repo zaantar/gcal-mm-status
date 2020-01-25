@@ -1,9 +1,8 @@
-import models.user_settings
-import settings
+from models.user_settings import UserSettings
 
 
 class UserList:
-    users: [models.user_settings.UserSettings] = []
+    users: [UserSettings] = []
 
-    def __init__(self, users: [models.user_settings.UserSettings]):
+    def __init__(self, users: [UserSettings]):
         self.users = users

@@ -33,3 +33,5 @@ def get_user_settings(user_login):
     return user
 
 
+def get_users():
+    return list(rawSettings['user_settings'].keys())
