@@ -68,7 +68,7 @@ def get_upcoming_events(user: models.user_settings.UserSettings):
         return []
     for event in events:
         formatted_events.append(
-            Event(id=event['id'], start=event['start'], end=event['end'], summary=event['summary'])
+            Event(event['id'], event['start'], event['end'], event['summary'], user)
         )
 
     return formatted_events

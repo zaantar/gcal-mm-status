@@ -1,5 +1,6 @@
 import json
 
+import constants.log_level
 import log
 
 from models.user_settings import UserSettings
@@ -7,7 +8,7 @@ from models.user_settings import UserSettings
 with open('../settings.json') as jsonFile:
     rawSettings = json.load(jsonFile)
 
-log.l('settings:' + json.dumps(rawSettings), log.Level.DEBUG)
+log.l('settings:' + json.dumps(rawSettings), constants.log_level.LogLevel.DEBUG)
 
 
 def get_default_value(setting_name):

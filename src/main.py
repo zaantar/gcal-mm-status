@@ -1,23 +1,23 @@
 import time
 from datetime import datetime, timedelta
-from log import log, Level as LogLevel
+from constants.log_level import LogLevel as LogLevel
 from models.event import Event
 from models.task_queue import TaskQueue
 import calendar_service
-import event_parser
 import settings
 from constants import constants
 from models.user_list import UserList
+from controllers.event_list import EventList
+from controllers.logger import Logger
 
-event_list: [Event] = []
-task_queue = TaskQueue()
-
-test_user = None
+logger: Logger = Logger()
+task_queue: TaskQueue = TaskQueue(logger)
 
 last_calendar_check = None
 last_task_queue_check = None
 
-user_list: UserList = None
+user_list: UserList
+event_list: EventList
 
 
 def need_check(last_check, interval_seconds):
@@ -37,46 +37,23 @@ def need_task_queue_check():
     return need_check(last_task_queue_check, constants.TASK_QUEUE_CHECK_INTERVAL)
 
 
-def update_events():
-    global event_list, test_user
-    log('Retrieving upcoming events...')
-    upcoming_events = calendar_service.get_upcoming_events(test_user)
-    log(upcoming_events, LogLevel.DEBUG)
-
-    existing_event_ids = [event.id for event in event_list]
-    new_events = [event for event in upcoming_events if event.id not in existing_event_ids]
-    log('Filtered new events:')
-    log(new_events)
-
-    event_list = event_list + new_events
-    # TODO remove old events from the list as well
-    return new_events
-
-
-def load_user_list():
-    global user_list
-    user_list = UserList([settings.get_user_settings(user_login) for user_login in settings.get_users()])
+def log(message, level: LogLevel = LogLevel.INFO):
+    global logger
+    logger.log(message, level)
 
 
 def main():
-    global last_calendar_check, last_task_queue_check, task_queue, test_user, user_list
+    global last_calendar_check, last_task_queue_check, task_queue, user_list, event_list
 
-    load_user_list()
-    test_user = user_list.users[0]
+    user_list = UserList([settings.get_user_settings(user_login) for user_login in settings.get_users()])
+    event_list = EventList(user_list)
 
     log('Starting the main loop...', LogLevel.DEBUG)
     while True:
         log('Loop iteration at %s' % datetime.now().strftime('%Y-%m-%d %H:%M:%S'), LogLevel.DEBUG)
         if need_calendar_check():
             log('Checking calendars for new events...')
-            new_events = update_events()
-            new_tasks = event_parser.events_to_tasks(new_events, test_user)
-            for task in new_tasks:
-                log(
-                    'Task: "' + task.__str__() + '" needs to perform action: ' + task.action_to_perform().value,
-                    LogLevel.INFO
-                )
-            task_queue.add_multiple(new_tasks)
+            task_queue.add_from_events(event_list.fetch_new_events())
             last_calendar_check = datetime.now()
         else:
             log('Calendar check skipped.')

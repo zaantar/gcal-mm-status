@@ -1,14 +1,7 @@
-from enum import IntEnum
+from constants.log_level import LogLevel
+from deprecated import deprecated
 
-
-class Level(IntEnum):
-    DEBUG = 0
-    INFO = 1
-    WARNING = 2
-    ERROR = 3
-
-
-current_log_level = Level.WARNING
+current_log_level = LogLevel.WARNING
 
 
 def set_log_level(new_level):
@@ -24,7 +17,8 @@ def stringify(to_stringify):
     return to_stringify
 
 
-def log(message, level=Level.INFO):
+@deprecated('Use a logger object instead.')
+def log(message, level=LogLevel.INFO):
     global current_log_level
     if current_log_level > level:
         return

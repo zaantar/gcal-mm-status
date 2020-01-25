@@ -1,5 +1,6 @@
 import daemon
-from log import log, Level as LogLevel, set_log_level
+from log import log, set_log_level
+from constants.log_level import LogLevel as LogLevel
 import signal
 import lockfile
 import sys
