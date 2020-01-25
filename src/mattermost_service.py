@@ -1,16 +1,7 @@
 import mattermostdriver
 import json
 import requests
-import enum
 import log
-
-
-class Status(enum.Enum):
-    ONLINE = 'online'
-    AWAY = 'away'
-    DND = 'dnd'
-    OFFLINE = 'offline'
-
 
 with open('../credentials/mattermost.json') as jsonFile:
     credentials = json.load(jsonFile)

@@ -1,4 +1,4 @@
-from task import Task, Action
+from models.task import Task, Action
 
 
 def get_task_comparison_key(task: Task):

@@ -7,8 +7,10 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 # noinspection PyPackageRequirements
 from google.auth.transport.requests import Request
+
+import models.user_settings
 import settings
-from event import Event
+from models.event import Event
 
 # If modifying these scopes, delete the token.pickle.* files.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
@@ -16,11 +18,11 @@ TOKEN_FILE_ROOT = '../credentials/'
 CREDENTIALS_FILE = '../credentials/google.json'
 
 
-def get_token_file(user: settings.UserSettings):
+def get_token_file(user: models.user_settings.UserSettings):
     return TOKEN_FILE_ROOT + user.gcal_token_file
 
 
-def get_service(user: settings.UserSettings):
+def get_service(user: models.user_settings.UserSettings):
     token_file = get_token_file(user)
     creds = None
     # The file token.pickle.* stores the user's access and refresh tokens, and is
@@ -44,7 +46,7 @@ def get_service(user: settings.UserSettings):
     return service
 
 
-def get_upcoming_events(user: settings.UserSettings):
+def get_upcoming_events(user: models.user_settings.UserSettings):
     service = get_service(user)
     if service is None:
         return []

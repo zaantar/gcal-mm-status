@@ -1,10 +1,11 @@
+import models.user_settings
 import settings
-from task import Task
-from event import Event
-from mattermost_service import Status
+from models.task import Task
+from models.event import Event
+from constants.mattermost_status import MattermostStatus
 
 
-def events_to_tasks(events: [Event], user: settings.UserSettings):
+def events_to_tasks(events: [Event], user: models.user_settings.UserSettings):
     tasks = []
     for event in events:
         for pattern in user.patterns:
@@ -29,6 +30,6 @@ def events_to_tasks(events: [Event], user: settings.UserSettings):
 
 
 def get_status_from_string(status_str):
-    if status_str not in Status:
-        return Status.ONLINE
-    return Status[status_str]
+    if status_str not in MattermostStatus:
+        return MattermostStatus.ONLINE
+    return MattermostStatus[status_str]

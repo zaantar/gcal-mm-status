@@ -1,13 +1,12 @@
 import time
 from datetime import datetime, timedelta
-from log import log, Level as LogLevel, set_log_level
-from event import Event
-from task import Task
-from task_queue import TaskQueue
+from log import log, Level as LogLevel
+from models.event import Event
+from models.task_queue import TaskQueue
 import calendar_service
 import event_parser
 import settings
-import constants
+from constants import constants
 
 event_list: [Event] = []
 task_queue = TaskQueue()
@@ -47,6 +46,7 @@ def update_events():
     log(new_events)
 
     event_list = event_list + new_events
+    # TODO remove old events from the list as well
     return new_events
 
 

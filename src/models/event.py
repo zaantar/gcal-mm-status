@@ -1,6 +1,6 @@
 from dateutil import tz
 from dateutil.parser import parse
-from task import Task
+from models.task import Task
 
 
 def google_date_to_datetime(google_date):
