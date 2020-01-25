@@ -1,14 +1,13 @@
 import time
 from datetime import datetime, timedelta
 from constants.log_level import LogLevel as LogLevel
-from models.event import Event
 from models.task_queue import TaskQueue
-import calendar_service
 import settings
 from constants import constants
 from models.user_list import UserList
 from controllers.event_list import EventList
 from controllers.logger import Logger
+from controllers.calendar_service import CalendarService
 
 logger: Logger = Logger()
 task_queue: TaskQueue = TaskQueue(logger)
@@ -43,10 +42,11 @@ def log(message, level: LogLevel = LogLevel.INFO):
 
 
 def main():
-    global last_calendar_check, last_task_queue_check, task_queue, user_list, event_list
+    global last_calendar_check, last_task_queue_check, task_queue, user_list, event_list, logger
 
     user_list = UserList([settings.get_user_settings(user_login) for user_login in settings.get_users()])
-    event_list = EventList(user_list)
+    calendar_service = CalendarService(logger)
+    event_list = EventList(user_list, calendar_service, logger)
 
     log('Starting the main loop...', LogLevel.DEBUG)
     while True:
