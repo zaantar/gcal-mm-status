@@ -8,9 +8,11 @@ from models.user_list import UserList
 from controllers.event_list import EventList
 from controllers.logger import Logger
 from controllers.calendar_service import CalendarService
+from controllers.mattermost_service import MattermostService
 
 logger: Logger = Logger()
-task_queue: TaskQueue = TaskQueue(logger)
+mattermost_service = MattermostService(logger)
+task_queue: TaskQueue = TaskQueue(logger, mattermost_service)
 
 last_calendar_check = None
 last_task_queue_check = None

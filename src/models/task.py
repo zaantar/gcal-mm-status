@@ -3,7 +3,7 @@ from datetime import datetime
 
 from constants.mattermost_status import MattermostStatus
 import time_utils
-import mattermost_service
+from controllers.mattermost_service import MattermostService
 from constants import constants
 
 
@@ -24,14 +24,23 @@ class Task:
     was_completed = False
     is_end_overlapping = False
     suffix_to_restore = ''
+    _mattermost_service: MattermostService
 
-    def __init__(self, user_login, start_time: datetime, end_time: datetime, status: MattermostStatus, suffix):
+    def __init__(
+            self,
+            user_login,
+            start_time: datetime,
+            end_time: datetime,
+            status: MattermostStatus,
+            suffix,
+            mattermost_service: MattermostService
+    ):
         self.user_login = user_login
         self.start_time = start_time
         self.end_time = end_time
         self.status = status
         self.suffix = suffix
-        return
+        self._mattermost_service = mattermost_service
 
     def __str__(self) -> str:
         return "for %s set status %s and suffix %s between %s and %s." % (
@@ -71,11 +80,11 @@ class Task:
     def do_action(self):
         action = self.action_to_perform()
         if Action.START == action:
-            self.suffix_to_restore = mattermost_service.get_user_suffix(self.user_login)
-            mattermost_service.set_user_status(self.user_login, self.status)
-            mattermost_service.set_user_suffix(self.user_login, self.suffix)
+            self.suffix_to_restore = self._mattermost_service.get_user_suffix(self.user_login)
+            self._mattermost_service.set_user_status(self.user_login, self.status)
+            self._mattermost_service.set_user_suffix(self.user_login, self.suffix)
             self.was_started = True
         elif Action.FINISH == action:
-            mattermost_service.set_user_status(self.user_login, MattermostStatus.OFFLINE)
-            mattermost_service.set_user_suffix(self.user_login, self.suffix_to_restore)
+            self._mattermost_service.set_user_status(self.user_login, MattermostStatus.OFFLINE)
+            self._mattermost_service.set_user_suffix(self.user_login, self.suffix_to_restore)
             self.was_completed = True

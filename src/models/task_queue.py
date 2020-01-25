@@ -5,7 +5,7 @@ from models.task import Task, Action
 from models.event import Event
 
 from controllers.logger import Logger
-
+from controllers.mattermost_service import MattermostService
 
 def get_task_comparison_key(task: Task):
     if not task.was_started:
@@ -22,9 +22,11 @@ def get_status_from_string(status_str):
 class TaskQueue:
     _tasks: [Task] = []
     _logger: Logger
+    _mattermost_service: MattermostService
 
-    def __init__(self, logger: Logger):
+    def __init__(self, logger: Logger, mattermost_service: MattermostService):
         self._logger = logger
+        self._mattermost_service = mattermost_service
 
     def _sort(self):
         self._tasks.sort(key=get_task_comparison_key)
@@ -55,7 +57,8 @@ class TaskQueue:
                         event.start,
                         event.end,
                         get_status_from_string(pattern.status),
-                        pattern.suffix
+                        pattern.suffix,
+                        self._mattermost_service
                     )
                     event.add_task(new_task)
                     self.add(new_task, update_overlaps=False)

@@ -16,8 +16,8 @@ from constants.log_level import LogLevel
 
 # If modifying these scopes, delete the token.pickle.* files.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
-TOKEN_FILE_ROOT = '../../credentials/'
-CREDENTIALS_FILE = '../../credentials/google.json'
+TOKEN_FILE_ROOT = '../credentials/'
+CREDENTIALS_FILE = '../credentials/google.json'
 
 
 def get_token_file(user: UserSettings):
@@ -62,7 +62,7 @@ class CalendarService:
             self._services[user_id] = build_service(user)
         return self._services[user_id]
 
-    def get_upcoming_events(self, user: models.user_settings.UserSettings):
+    def get_upcoming_events(self, user: UserSettings):
         service = self.get_service(user)
         if service is None:
             return []

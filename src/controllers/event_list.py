@@ -21,7 +21,7 @@ class EventList:
         for user in self._users.get_users():
             self._logger.log('Retrieving upcoming events for user %s...' % user.mattermost_login)
             upcoming_user_events = self._calendar_service.get_upcoming_events(user)
-            log(upcoming_user_events, LogLevel.DEBUG)
+            self._logger.log(upcoming_user_events, LogLevel.DEBUG)
             upcoming_events = upcoming_events + upcoming_user_events
 
         existing_event_ids = [event.id for event in self._events]

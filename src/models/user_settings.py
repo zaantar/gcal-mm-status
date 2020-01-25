@@ -7,7 +7,7 @@ class UserSettings:
     mattermost_login = ''
     gcal_token_file = ''
     patterns: List[EventPattern] = []
-    _id: String
+    _id: str
 
     def __init__(self, user_settings):
         self.mattermost_login = user_settings['mattermost_login']
