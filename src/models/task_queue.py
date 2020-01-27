@@ -50,8 +50,10 @@ class TaskQueue:
     def add_from_events(self, events: [Event]):
         for event in events:
             user = event.get_user()
+            # Only use the first matching pattern per event, prevent duplicated tasks.
+            is_event_matched = False
             for pattern in user.patterns:
-                if pattern.is_match(event.summary):
+                if (not is_event_matched) and pattern.is_match(event.summary):
                     new_task = Task(
                         user.mattermost_login,
                         event.start,
@@ -67,6 +69,7 @@ class TaskQueue:
                         + '" needs to perform action: ' + new_task.action_to_perform().value,
                         LogLevel.INFO
                     )
+                    is_event_matched = True
         self.update_overlaps()
 
     def update_overlaps(self):
