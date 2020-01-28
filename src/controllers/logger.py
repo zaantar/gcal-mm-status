@@ -1,4 +1,5 @@
 from constants.log_level import LogLevel
+from datetime import datetime
 
 
 def stringify(to_stringify):
@@ -11,6 +12,7 @@ def stringify(to_stringify):
 
 class Logger:
     _level_threshold: LogLevel
+    _indentation: int = 0
 
     def __init__(self, level_threshold: LogLevel = LogLevel.INFO):
         self._level_threshold = level_threshold
@@ -18,7 +20,44 @@ class Logger:
     def set_level_threshold(self, new_threshold: LogLevel):
         self._level_threshold = new_threshold
 
-    def log(self, message, level=LogLevel.INFO):
+    @staticmethod
+    def _level_to_str(level):
+        if level == LogLevel.DEBUG:
+            return 'DBG'
+        elif level == LogLevel.INFO:
+            return 'INFO'
+        elif level == LogLevel.WARNING:
+            return 'WARN'
+        elif level == LogLevel.ERROR:
+            return 'ERR'
+        return ''
+
+    def _maybe_log(self, message, level):
         if self._level_threshold > level:
             return
-        print(stringify(message))
+        if message is None or len(message) == 0:
+            return
+
+        tabs = "\t" * self._indentation
+        lines = stringify(message).splitlines()
+        lines = [lines[0]] + [tabs + "\t" + line for line in lines[1:]]
+        print(
+            "%s%s [%s] %s" % (
+                tabs, self._level_to_str(level), datetime.now().strftime('%Y-%m-%d %H:%M:%S'), "\n".join(lines)
+            )
+        )
+
+    def log(self, message, level=LogLevel.INFO, indent_after=0):
+        self._maybe_log(message, level)
+
+        if indent_after > 0:
+            self.tab()
+        elif indent_after < 0:
+            self.untab()
+
+    def tab(self):
+        self._indentation += 1
+
+    def untab(self):
+        if self._indentation > 0:
+            self._indentation -= 1

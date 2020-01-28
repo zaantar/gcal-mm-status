@@ -43,8 +43,9 @@ class Task:
         self._mattermost_service = mattermost_service
 
     def __str__(self) -> str:
-        return "for %s set status %s and suffix %s between %s and %s." % (
-            self.user_login, self.status, self.suffix, self.start_time, self.end_time
+        return "{%s -> %s | %s ~ (%s - %s)}" % (
+            self.user_login, self.status, self.suffix, self.start_time.strftime('%Y-%m-%d %H:%M'),
+            self.end_time.strftime('%Y-%m-%d %H:%M')
         )
 
     def needs_to_start(self):
@@ -86,5 +87,6 @@ class Task:
             self.was_started = True
         elif Action.FINISH == action:
             self._mattermost_service.set_user_status(self.user_login, MattermostStatus.OFFLINE)
-            self._mattermost_service.set_user_suffix(self.user_login, self.suffix_to_restore)
+            # TODO take suffix_to_restore into account
+            self._mattermost_service.set_user_suffix(self.user_login, 'off')
             self.was_completed = True
