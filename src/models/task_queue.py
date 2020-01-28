@@ -7,6 +7,7 @@ from models.event import Event
 from controllers.logger import Logger
 from controllers.mattermost_service import MattermostService
 
+
 def get_task_comparison_key(task: Task):
     if not task.was_started:
         return task.start_time
@@ -14,9 +15,10 @@ def get_task_comparison_key(task: Task):
 
 
 def get_status_from_string(status_str):
-    if status_str not in MattermostStatus:
+    try:
+        return MattermostStatus(status_str)
+    except ValueError:
         return MattermostStatus.ONLINE
-    return MattermostStatus[status_str]
 
 
 class TaskQueue:
