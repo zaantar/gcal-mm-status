@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 from enum import Enum
 from datetime import datetime
-
 from constants.mattermost_status import MattermostStatus
 import time_utils
 from controllers.mattermost_service import MattermostService
@@ -24,10 +25,11 @@ class Task:
     suffix = ''
     was_started = False
     was_completed = False
-    is_end_overlapping = False
+    _is_end_overlapping_exactly = False
     suffix_to_restore = ''
     _mattermost_service: MattermostService
     _logger: Logger
+    _overlapping_task: Task | None = None
 
     def __init__(
             self,
@@ -57,9 +59,7 @@ class Task:
         return time_utils.is_in_time_range(self.start_time, constants.TASK_QUEUE_CHECK_INTERVAL * 2)
 
     def needs_to_finish_now(self):
-        # time_utils.is_after_threshold(self.end_time, constants.TASK_QUEUE_CHECK_INTERVAL)
-        # return time_utils.is_in_time_range(self.end_time, constants.TASK_QUEUE_CHECK_INTERVAL * 2)
-        return self.end_time >= time_utils.get_now_with_timezone()
+        return self.end_time <= time_utils.get_now_with_timezone()
 
     def has_missed_start(self):
         return time_utils.is_after_threshold(self.start_time, constants.TASK_QUEUE_CHECK_INTERVAL)
@@ -76,8 +76,12 @@ class Task:
 
         if not self.was_completed:
             if self.needs_to_finish_now():
-                if self.is_end_overlapping:
-                    self._logger.log('The end of the task %s is overlapping - voting for removal.' % str(self), LogLevel.DEBUG)
+                if self._is_end_overlapping_exactly:
+                    self._logger.debug(
+                        'The end of the task %s is overlapping exactly with %s - voting for removal.' % (
+                            str(self), str(self._overlapping_task)
+                        )
+                    )
                     return Action.REMOVE
                 return Action.FINISH
             return Action.WAIT
@@ -96,8 +100,16 @@ class Task:
             self._mattermost_service.set_user_suffix(self.user_login, self.suffix)
             self.was_started = True
         elif Action.FINISH == action:
-            self._mattermost_service.set_user_status(self.user_login, MattermostStatus.OFFLINE)
-            # TODO take suffix_to_restore into account
-            self._mattermost_service.set_user_suffix(self.user_login, 'off')
+            if self._overlapping_task is not None:
+                self._mattermost_service.set_user_status(self.user_login, self._overlapping_task.status)
+                self._mattermost_service.set_user_suffix(self.user_login, self._overlapping_task.suffix)
+            else:
+                self._mattermost_service.set_user_status(self.user_login, MattermostStatus.OFFLINE)
+                self._mattermost_service.set_user_suffix(self.user_login, 'off')
             self.was_completed = True
         self._logger.untab()
+
+    def add_overlapping_task(self, overlapping_task: Task):
+        self._overlapping_task = overlapping_task
+        if self.end_time == overlapping_task.start_time:
+            self._is_end_overlapping_exactly = True

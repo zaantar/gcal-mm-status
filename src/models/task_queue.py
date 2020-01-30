@@ -1,3 +1,5 @@
+from typing import Any
+
 from constants.mattermost_status import MattermostStatus
 from constants.log_level import LogLevel
 
@@ -80,7 +82,7 @@ class TaskQueue:
     def update_overlaps(self):
         for i in range(1, len(self._tasks)):
             current_task = self._tasks[i]
-            previous_task = self._tasks[i - 1]
+            previous_task: Task = self._tasks[i - 1]
 
             if current_task.start_time <= previous_task.end_time <= current_task.end_time:
-                previous_task.is_end_overlapping = True
+                previous_task.add_overlapping_task(current_task)
