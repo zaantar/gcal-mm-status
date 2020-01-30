@@ -89,6 +89,17 @@ class CalendarService:
         if not events:
             return []
         for event in events:
+            if 'attendees' in event:
+                # Eventually, this should be moved to Event itself and taken into account when handling
+                # updated events (changed time or acceptance status).
+                self_attendees = list(filter(lambda attendee: 'self' in attendee and attendee['self'], event['attendees']))
+                declined_self_attendees = list(filter(
+                    lambda attendee: 'responseStatus' in attendee and 'declined' == attendee['responseStatus'],
+                    self_attendees
+                ))
+                if len(declined_self_attendees) > 0 and len(declined_self_attendees) == len(self_attendees):
+                    continue
+
             formatted_events.append(
                 Event(event['id'], event['start'], event['end'], event['summary'], user)
             )
