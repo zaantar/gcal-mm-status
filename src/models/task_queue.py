@@ -9,9 +9,11 @@ from controllers.mattermost_service import MattermostService
 
 
 def get_task_comparison_key(task: Task):
-    if not task.was_started:
-        return task.start_time
-    return task.end_time
+    return task.start_time
+    # TODO this needs to follow the "earliest action" value
+    # if not task.was_started:
+    #     return task.start_time
+    # return task.end_time
 
 
 def get_status_from_string(status_str):
@@ -62,7 +64,8 @@ class TaskQueue:
                         event.end,
                         get_status_from_string(pattern.status),
                         pattern.suffix,
-                        self._mattermost_service
+                        self._mattermost_service,
+                        self._logger
                     )
                     event.add_task(new_task)
                     self.add(new_task, update_overlaps=False)
