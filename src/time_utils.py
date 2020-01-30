@@ -33,3 +33,7 @@ def is_after_threshold(time: datetime, interval: int):
     if interval < delta.total_seconds():
         return True
     return False
+
+
+def get_now_with_timezone():
+    return datetime.now(tz=get_local_timezone())
