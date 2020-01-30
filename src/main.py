@@ -65,10 +65,13 @@ def main():
 
             logger.log('Performing actions and rescheduling...', LogLevel.DEBUG)
             for task in ready_tasks:
-                logger.log('Task ' + task + '...', LogLevel.INFO, 1)
+                logger.log('Task ' + str(task) + '...', LogLevel.INFO, 1)
                 task.do_action()
                 if Action.WAIT == task.action_to_perform():
+                    logger.log('Re-adding the task to wait for its another action.', LogLevel.INFO)
                     task_queue.add(task)
+                else:
+                    logger.log('The task is completed, taking it out of the queue', LogLevel.INFO)
                 logger.untab()
 
             logger.log('All queue tasks:', LogLevel.DEBUG)

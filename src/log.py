@@ -25,5 +25,6 @@ def log(message, level=LogLevel.INFO):
     print(stringify(message))
 
 
+@deprecated('Use a logger object instead.')
 def l(message, level):
     log(message, level)
