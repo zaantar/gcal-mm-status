@@ -2,14 +2,6 @@ from constants.log_level import LogLevel
 from datetime import datetime
 
 
-def stringify(to_stringify):
-    if list == type(to_stringify):
-        return "\n".join([stringify(item) for item in to_stringify])
-    if str != type(to_stringify):
-        return to_stringify.__str__()
-    return to_stringify
-
-
 class Logger:
     _level_threshold: LogLevel
     _indentation: int = 0
@@ -32,6 +24,14 @@ class Logger:
             return 'ERR'
         return ''
 
+    @staticmethod
+    def stringify(to_stringify):
+        if list == type(to_stringify):
+            return "\n".join([Logger.stringify(item) for item in to_stringify])
+        if str != type(to_stringify):
+            return to_stringify.__str__()
+        return to_stringify
+
     def _maybe_log(self, message, level):
         if self._level_threshold > level:
             return
@@ -39,7 +39,7 @@ class Logger:
             return
 
         tabs = "\t" * self._indentation
-        lines = stringify(message).splitlines()
+        lines = self.stringify(message).splitlines()
         lines = [lines[0]] + [tabs + "\t" + line for line in lines[1:]]
         print(
             "%s%s [%s] %s" % (
@@ -61,3 +61,15 @@ class Logger:
     def untab(self):
         if self._indentation > 0:
             self._indentation -= 1
+
+    def debug(self, message):
+        self.log(message, LogLevel.DEBUG)
+
+    def info(self, message, indent_after=0):
+        self.log(message, LogLevel.INFO, indent_after)
+
+    def warning(self, message, indent_after=0):
+        self.log(message, LogLevel.WARNING, indent_after)
+
+    def error(self, message, indent_after=0):
+        self.log(message, LogLevel.ERROR, indent_after)
