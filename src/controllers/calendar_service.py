@@ -7,6 +7,8 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 # noinspection PyPackageRequirements
 from google.auth.transport.requests import Request
+# noinspection PyPackageRequirements
+import google.auth.exceptions
 
 from models.user_settings import UserSettings
 import settings
@@ -70,14 +72,18 @@ class CalendarService:
         # Call the Calendar API
         now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
         self._logger.log('Getting the upcoming 10 events')
-        events_result = service.events().list(
-            calendarId='primary',
-            timeMin=now,
-            maxResults=10,
-            singleEvents=True,
-            orderBy='startTime'
-        ).execute()
-        events = events_result.get('items', [])
+        try:
+            events_result = service.events().list(
+                calendarId='primary',
+                timeMin=now,
+                maxResults=10,
+                singleEvents=True,
+                orderBy='startTime'
+            ).execute()
+            events = events_result.get('items', [])
+        except google.auth.exceptions.TransportError as exc:
+            self._logger.error('A transport error while fetching upcoming events: %s' % repr(exc))
+            return []
 
         formatted_events = []
         if not events:
