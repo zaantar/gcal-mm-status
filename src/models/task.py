@@ -1,115 +1,61 @@
-from __future__ import annotations
-
-from enum import Enum
 from datetime import datetime
-from constants.mattermost_status import MattermostStatus
-import time_utils
-from controllers.mattermost_service import MattermostService
-from constants import constants
+from constants.task_action import TaskAction
 from controllers.logger import Logger
-from constants.log_level import LogLevel
-
-
-class Action(Enum):
-    START = 'start'
-    FINISH = 'finish'
-    WAIT = 'wait'
-    REMOVE = 'remove'
+from controllers.mattermost_service import MattermostService
+import time_utils
+from models.chat_state import ChatState
+from constants.task_type import TaskType
 
 
 class Task:
-    user_login = ''
-    start_time: datetime = None
-    end_time: datetime = None
-    status: MattermostStatus = None
-    suffix = ''
-    was_started = False
-    was_completed = False
-    _is_end_overlapping_exactly = False
-    suffix_to_restore = ''
-    _mattermost_service: MattermostService
+    _event_time: datetime
+    _user_login: str
     _logger: Logger
-    _overlapping_task: Task | None = None
+    _mattermost_service: MattermostService
+    _is_done: bool = False
+    _chat_state: ChatState
+    _type: TaskType
 
     def __init__(
-            self,
-            user_login,
-            start_time: datetime,
-            end_time: datetime,
-            status: MattermostStatus,
-            suffix,
-            mattermost_service: MattermostService,
-            logger: Logger
+            self, event_time: datetime, user_login: str, chat_state: ChatState,
+            task_type: TaskType,
+            logger: Logger,
+            mattermost_service: MattermostService
     ):
-        self.user_login = user_login
-        self.start_time = start_time
-        self.end_time = end_time
-        self.status = status
-        self.suffix = suffix
-        self._mattermost_service = mattermost_service
+        self._event_time = event_time
+        self._user_login = user_login
+        self._chat_state = chat_state
+        self._type = task_type
         self._logger = logger
+        self._mattermost_service = mattermost_service
 
     def __str__(self) -> str:
-        return "{%s -> %s | %s ~ (%s - %s)}" % (
-            self.user_login, self.status, self.suffix, self.start_time.strftime('%Y-%m-%d %H:%M'),
-            self.end_time.strftime('%Y-%m-%d %H:%M')
+        return "{%s -> %s @ %s}" % (
+            self._user_login, str(self._chat_state), self._event_time.strftime('%Y-%m-%d %H:%M')
         )
 
-    def needs_to_start_now(self):
-        return time_utils.is_in_time_range(self.start_time, constants.TASK_QUEUE_CHECK_INTERVAL * 2)
-
-    def needs_to_finish_now(self):
-        return self.end_time <= time_utils.get_now_with_timezone()
-
-    def has_missed_start(self):
-        return time_utils.is_after_threshold(self.start_time, constants.TASK_QUEUE_CHECK_INTERVAL)
+    def is_ready(self):
+        return self._event_time <= time_utils.get_now_with_timezone()
 
     def action_to_perform(self):
-        if not self.was_started:
-            if self.needs_to_start_now():
-                return Action.START
-            elif self.has_missed_start():
-                # this is possible only when starting the service while an event is already ongoing
-                self._logger.log('Detected a missed start for ' + str(self), LogLevel.WARNING)
-                return Action.START
-            return Action.WAIT
-
-        if not self.was_completed:
-            if self.needs_to_finish_now():
-                if self._is_end_overlapping_exactly:
-                    self._logger.debug(
-                        'The end of the task %s is overlapping exactly with %s - voting for removal.' % (
-                            str(self), str(self._overlapping_task)
-                        )
-                    )
-                    return Action.REMOVE
-                return Action.FINISH
-            return Action.WAIT
-
-        return Action.REMOVE
-
-    def is_actionable(self):
-        return self.action_to_perform() != Action.WAIT
+        if self._is_done:
+            return TaskAction.REMOVE
+        elif self.is_ready():
+            return TaskAction.START
+        return TaskAction.WAIT
 
     def do_action(self):
-        action = self.action_to_perform()
-        self._logger.log('Action %s for task %s...' % (action.name, str(self)), LogLevel.INFO, 1)
-        if Action.START == action:
-            self.suffix_to_restore = self._mattermost_service.get_user_suffix(self.user_login)
-            self._mattermost_service.set_user_status(self.user_login, self.status)
-            self._mattermost_service.set_user_suffix(self.user_login, self.suffix)
-            self.was_started = True
-        elif Action.FINISH == action:
-            if self._overlapping_task is not None:
-                self._mattermost_service.set_user_status(self.user_login, self._overlapping_task.status)
-                self._mattermost_service.set_user_suffix(self.user_login, self._overlapping_task.suffix)
-            else:
-                self._mattermost_service.set_user_status(self.user_login, MattermostStatus.OFFLINE)
-                self._mattermost_service.set_user_suffix(self.user_login, 'off')
-            self.was_completed = True
+        if TaskAction.START != self.action_to_perform():
+            self._logger.warning('%s: There is no action to perform' % str(self))
+            return
+
+        self._logger.info('Performing task %s...' % str(self), 1)
+        self._chat_state.apply(self._user_login, self._mattermost_service)
+        self._is_done = True
         self._logger.untab()
 
-    def add_overlapping_task(self, overlapping_task: Task):
-        self._overlapping_task = overlapping_task
-        if self.end_time == overlapping_task.start_time:
-            self._is_end_overlapping_exactly = True
+    def get_event_time(self) -> datetime:
+        return self._event_time
+
+    def get_type(self) -> TaskType:
+        return self._type

@@ -4,12 +4,13 @@ from constants.log_level import LogLevel as LogLevel
 from models.task_queue import TaskQueue
 import settings
 from constants import constants
-from models.task import Action
+from constants.task_action import TaskAction
 from models.user_list import UserList
 from controllers.event_list import EventList
 from controllers.logger import Logger
 from controllers.calendar_service import CalendarService
 from controllers.mattermost_service import MattermostService
+from models.task import Task
 
 logger: Logger = Logger()
 mattermost_service = MattermostService(logger)
@@ -44,7 +45,7 @@ def main():
 
     user_list = UserList([settings.get_user_settings(user_login) for user_login in settings.get_users()])
     calendar_service = CalendarService(logger)
-    event_list = EventList(user_list, calendar_service, logger)
+    event_list = EventList(user_list, calendar_service, logger, mattermost_service)
 
     logger.set_level_threshold(LogLevel.DEBUG)
     logger.log('Starting the main loop...', LogLevel.DEBUG)
@@ -52,31 +53,30 @@ def main():
         logger.log('Loop iteration', LogLevel.DEBUG, 1)
         if need_calendar_check():
             logger.log('Checking calendars for new events...', LogLevel.INFO, 1)
-            task_queue.add_from_events(event_list.fetch_new_events())
+            new_events = event_list.fetch_new_events()
+            if len(new_events) > 0:
+                all_tasks = event_list.build_tasks()
+                task_queue.set(all_tasks)
             last_calendar_check = datetime.now()
             logger.untab()
         else:
             logger.log('Calendar check skipped.', LogLevel.DEBUG)
 
         if need_task_queue_check():
-            logger.log('Checking ready tasks...', LogLevel.DEBUG, 1)
+            logger.debug('Checking ready tasks...', 1)
             ready_tasks = task_queue.pop_ready_tasks()
-            logger.log(ready_tasks)
-
-            logger.log('Performing actions and rescheduling...', LogLevel.DEBUG)
-            for task in ready_tasks:
-                logger.log('Task ' + str(task) + '...', LogLevel.INFO, 1)
-                task.do_action()
-                if Action.WAIT == task.action_to_perform():
-                    logger.log('Re-adding the task to wait for its another action.', LogLevel.INFO)
-                    task_queue.add(task)
-                else:
-                    logger.log('The task is completed, taking it out of the queue', LogLevel.INFO)
-                logger.untab()
-
-            logger.log('All queue tasks:', LogLevel.DEBUG)
+            if len(ready_tasks) > 0:
+                logger.debug(ready_tasks)
+                logger.log('Executing tasks...', LogLevel.DEBUG)
+                task: Task
+                for task in ready_tasks:
+                    logger.info('Task ' + str(task) + '...', 1)
+                    task.do_action()
+                    logger.untab()
+            else:
+                logger.debug('No tasks are ready to be executed.')
             # noinspection PyProtectedMember
-            logger.log(task_queue._tasks, LogLevel.DEBUG)
+            logger.debug("All queue tasks: \n%s" % logger.stringify(task_queue._tasks))
             logger.untab()
             last_task_queue_check = datetime.now()
         else:

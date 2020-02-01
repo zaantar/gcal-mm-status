@@ -62,8 +62,8 @@ class Logger:
         if self._indentation > 0:
             self._indentation -= 1
 
-    def debug(self, message):
-        self.log(message, LogLevel.DEBUG)
+    def debug(self, message, indent_after=0):
+        self.log(message, LogLevel.DEBUG, indent_after)
 
     def info(self, message, indent_after=0):
         self.log(message, LogLevel.INFO, indent_after)
