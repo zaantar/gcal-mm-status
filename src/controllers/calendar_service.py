@@ -23,7 +23,7 @@ CREDENTIALS_FILE = '../credentials/google.json'
 
 
 def get_token_file(user: User):
-    return TOKEN_FILE_ROOT + user.gcal_token_file
+    return TOKEN_FILE_ROOT + user._gcal_token_file
 
 
 def build_service(user: User):

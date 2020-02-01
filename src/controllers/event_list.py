@@ -7,7 +7,6 @@ from constants.task_type import TaskType
 from models.task import Task
 from controllers.mattermost_service import MattermostService
 from models.chat_state import ChatState
-from constants.mattermost_status import MattermostStatus
 from models.user import User
 
 
@@ -27,8 +26,9 @@ class EventList:
 
     def fetch_new_events(self):
         upcoming_events = []
+        user: User
         for user in self._users.get_users():
-            self._logger.log('Retrieving upcoming events for user %s...' % user.mattermost_login)
+            self._logger.log('Retrieving upcoming events for user %s...' % user.get_mattermost_login())
             upcoming_user_events = self._calendar_service.get_upcoming_events(user)
             self._logger.log(upcoming_user_events, LogLevel.DEBUG)
             upcoming_events = upcoming_events + upcoming_user_events
@@ -54,7 +54,7 @@ class EventList:
         user_events = [
             event
             for event in self._events
-            if event.get_user().mattermost_login == user.mattermost_login
+            if event.get_user().get_mattermost_login() == user.get_mattermost_login()
         ]
 
         state_changes = \
@@ -74,7 +74,7 @@ class EventList:
             if state_change['type'] == TaskType.START:
                 all_tasks.append(Task(
                     state_change['time'],
-                    user.mattermost_login,
+                    user.get_mattermost_login(),
                     state_change['event'].get_chat_state(),
                     TaskType.START,
                     self._logger,
@@ -87,15 +87,14 @@ class EventList:
                 started_events_except_current.sort(key=lambda event: event.start, reverse=True)
                 chat_state: ChatState
                 if len(started_events_except_current) == 0:
-                    # TODO store this default in the user object
-                    chat_state = ChatState('off', MattermostStatus.OFFLINE)
+                    chat_state = user.get_default_chat_state()
                 else:
                     latest_overlapping_event: Event = started_events_except_current[0]
                     chat_state = latest_overlapping_event.get_chat_state()
 
                 all_tasks.append(Task(
                     state_change['time'],
-                    user.mattermost_login,
+                    user.get_mattermost_login(),
                     chat_state,
                     TaskType.END,
                     self._logger,

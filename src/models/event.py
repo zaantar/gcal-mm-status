@@ -14,13 +14,6 @@ def google_date_to_datetime(google_date) -> datetime:
     return dt
 
 
-def get_status_from_string(status_str) -> MattermostStatus:
-    try:
-        return MattermostStatus(status_str)
-    except ValueError:
-        return MattermostStatus.ONLINE
-
-
 class Event:
     id = None
     start: datetime
@@ -49,9 +42,9 @@ class Event:
         return self._user
 
     def _match_patterns(self):
-        for pattern in self._user.patterns:
+        for pattern in self._user.get_patterns():
             if pattern.is_match(self.summary):
-                self._chat_state = ChatState(pattern.suffix, get_status_from_string(pattern.status))
+                self._chat_state = ChatState(pattern.suffix, MattermostStatus.from_string(pattern.status))
                 break
 
     def is_actionable(self):
