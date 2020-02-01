@@ -64,7 +64,7 @@ def main():
 
         if need_task_queue_check():
             logger.debug('Checking ready tasks...', 1)
-            ready_tasks = task_queue.pop_ready_tasks()
+            ready_tasks = task_queue.get_ready_tasks()
             if len(ready_tasks) > 0:
                 logger.debug(ready_tasks)
                 logger.log('Executing tasks...', LogLevel.DEBUG)

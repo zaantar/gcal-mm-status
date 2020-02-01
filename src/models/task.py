@@ -30,8 +30,11 @@ class Task:
         self._mattermost_service = mattermost_service
 
     def __str__(self) -> str:
-        return "{%s -> %s @ %s}" % (
-            self._user_login, str(self._chat_state), self._event_time.strftime('%Y-%m-%d %H:%M')
+        return "{%s -> %s @ %s%s}" % (
+            self._user_login,
+            str(self._chat_state),
+            self._event_time.strftime('%Y-%m-%d %H:%M'),
+            ' (done)' if self._is_done else ''
         )
 
     def is_ready(self):
@@ -59,3 +62,9 @@ class Task:
 
     def get_type(self) -> TaskType:
         return self._type
+
+    def get_user_login(self) -> str:
+        return self._user_login
+
+    def set_as_done(self):
+        self._is_done = True
