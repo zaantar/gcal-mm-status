@@ -9,12 +9,10 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 # noinspection PyPackageRequirements
 import google.auth.exceptions
-
 from models.user import User
-import settings
 from models.event import Event
 from controllers.logger import Logger
-from constants.log_level import LogLevel
+import sys
 
 # If modifying these scopes, delete the token.pickle.* files.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
@@ -72,6 +70,7 @@ class CalendarService:
         # Call the Calendar API
         now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
         self._logger.log('Getting the upcoming 10 events')
+        # noinspection PyBroadException
         try:
             events_result = service.events().list(
                 calendarId='primary',
@@ -84,6 +83,9 @@ class CalendarService:
         except google.auth.exceptions.TransportError as exc:
             self._logger.error('A transport error while fetching upcoming events: %s' % repr(exc))
             return []
+        except:
+            self._logger.error('Error while fetching upcoming events: %s' % repr(sys.exc_info()[0]))
+            return []
 
         formatted_events = []
         if not events:
@@ -92,7 +94,8 @@ class CalendarService:
             if 'attendees' in event:
                 # Eventually, this should be moved to Event itself and taken into account when handling
                 # updated events (changed time or acceptance status).
-                self_attendees = list(filter(lambda attendee: 'self' in attendee and attendee['self'], event['attendees']))
+                self_attendees = list(
+                    filter(lambda attendee: 'self' in attendee and attendee['self'], event['attendees']))
                 declined_self_attendees = list(filter(
                     lambda attendee: 'responseStatus' in attendee and 'declined' == attendee['responseStatus'],
                     self_attendees
