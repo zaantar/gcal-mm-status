@@ -1,5 +1,5 @@
 import json
-from models.user_settings import UserSettings
+from models.user import User
 
 with open('../settings.json') as jsonFile:
     rawSettings = json.load(jsonFile)
@@ -23,7 +23,7 @@ def get_user_settings(user_login):
         return user_cache[user_login]
     if user_login not in rawSettings['user_settings']:
         return None
-    user = UserSettings(rawSettings['user_settings'][user_login])
+    user = User(rawSettings['user_settings'][user_login])
     user_cache[user_login] = user
     return user
 

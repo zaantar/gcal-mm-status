@@ -1,6 +1,6 @@
 from dateutil import tz
 from dateutil.parser import parse
-from models.user_settings import UserSettings
+from models.user import User
 from models.chat_state import ChatState
 from constants.mattermost_status import MattermostStatus
 from datetime import datetime
@@ -27,10 +27,10 @@ class Event:
     end: datetime
     summary = ''
     is_cancelled = False
-    _user: UserSettings
+    _user: User
     _chat_state: ChatState
 
-    def __init__(self, event_id, start, end, summary, user: UserSettings, is_cancelled=False):
+    def __init__(self, event_id, start, end, summary, user: User, is_cancelled=False):
         self.id = event_id
         self.start = google_date_to_datetime(start)
         self.end = google_date_to_datetime(end)
@@ -45,7 +45,7 @@ class Event:
             self.id, self.start, self.end, self.summary
         )
 
-    def get_user(self) -> UserSettings:
+    def get_user(self) -> User:
         return self._user
 
     def _match_patterns(self):

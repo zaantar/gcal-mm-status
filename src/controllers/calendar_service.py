@@ -10,7 +10,7 @@ from google.auth.transport.requests import Request
 # noinspection PyPackageRequirements
 import google.auth.exceptions
 
-from models.user_settings import UserSettings
+from models.user import User
 import settings
 from models.event import Event
 from controllers.logger import Logger
@@ -22,11 +22,11 @@ TOKEN_FILE_ROOT = '../credentials/'
 CREDENTIALS_FILE = '../credentials/google.json'
 
 
-def get_token_file(user: UserSettings):
+def get_token_file(user: User):
     return TOKEN_FILE_ROOT + user.gcal_token_file
 
 
-def build_service(user: UserSettings):
+def build_service(user: User):
     token_file = get_token_file(user)
     creds = None
     # The file token.pickle.* stores the user's access and refresh tokens, and is
@@ -57,14 +57,14 @@ class CalendarService:
     def __init__(self, logger: Logger):
         self._logger = logger
 
-    def get_service(self, user: UserSettings):
+    def get_service(self, user: User):
         user_id = user.get_id()
         if user_id not in self._services:
             self._logger.log('Building calendar service object for user %s...' % user_id)
             self._services[user_id] = build_service(user)
         return self._services[user_id]
 
-    def get_upcoming_events(self, user: UserSettings):
+    def get_upcoming_events(self, user: User):
         service = self.get_service(user)
         if service is None:
             return []

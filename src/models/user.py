@@ -3,7 +3,7 @@ from typing import List
 from models.event_pattern import EventPattern
 
 
-class UserSettings:
+class User:
     mattermost_login = ''
     gcal_token_file = ''
     patterns: List[EventPattern] = []

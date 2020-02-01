@@ -8,7 +8,7 @@ from models.task import Task
 from controllers.mattermost_service import MattermostService
 from models.chat_state import ChatState
 from constants.mattermost_status import MattermostStatus
-from models.user_settings import UserSettings
+from models.user import User
 
 
 class EventList:
@@ -50,7 +50,7 @@ class EventList:
             all_tasks = all_tasks + self._build_task_per_user(user)
         return all_tasks
 
-    def _build_task_per_user(self, user: UserSettings):
+    def _build_task_per_user(self, user: User):
         user_events = [
             event
             for event in self._events
