@@ -53,8 +53,8 @@ def main():
         logger.log('Loop iteration', LogLevel.DEBUG, 1)
         if need_calendar_check():
             logger.log('Checking calendars for new events...', LogLevel.INFO, 1)
-            new_events = event_list.fetch_new_events()
-            if len(new_events) > 0:
+            has_updates = event_list.update_events()
+            if has_updates:
                 all_tasks = event_list.build_tasks()
                 task_queue.set(all_tasks)
             last_calendar_check = datetime.now()

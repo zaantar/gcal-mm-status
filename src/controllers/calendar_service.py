@@ -21,7 +21,7 @@ CREDENTIALS_FILE = '../credentials/google.json'
 
 
 def get_token_file(user: User):
-    return TOKEN_FILE_ROOT + user._gcal_token_file
+    return TOKEN_FILE_ROOT + user.get_gcal_token_file_name()
 
 
 def build_service(user: User):
@@ -70,7 +70,6 @@ class CalendarService:
         # Call the Calendar API
         now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
         self._logger.log('Getting the upcoming 10 events')
-        # noinspection PyBroadException
         try:
             events_result = service.events().list(
                 calendarId='primary',

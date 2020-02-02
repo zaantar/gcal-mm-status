@@ -24,30 +24,51 @@ class EventList:
         self._logger = logger
         self._mattermost_service = mattermost_service
 
-    def fetch_new_events(self):
+    def update_events(self):
         upcoming_events = []
         user: User
+        has_updates = False
         for user in self._users.get_users():
             self._logger.log('Retrieving upcoming events for user %s...' % user.get_mattermost_login())
             upcoming_user_events = self._calendar_service.get_upcoming_events(user)
             self._logger.log(upcoming_user_events, LogLevel.DEBUG)
             upcoming_events = upcoming_events + upcoming_user_events
 
-        existing_event_ids = [event.id for event in self._events]
-        new_events = [event for event in upcoming_events if
-                      event.id not in existing_event_ids and event.is_actionable()]
-        self._events = self._events + new_events
-        # TODO remove old events from the list as well
+        new_events: [Event] = []
+        for new_event in upcoming_events:
+            found = False
+            old_event: Event
+            for old_event in self._events:
+                if old_event.is_same(new_event):
+                    if old_event.is_updated_by(new_event):
+                        self._events.remove(old_event)
+                        self._events.append(new_event)
+                        self._logger.info('Event %s has been updated by %s.' % (str(old_event), str(new_event)))
+                        has_updates = True
+                    else:
+                        self._logger.debug('Skipping event %s, it is already in the list.' % str(new_event))
+                    found = True
+                    break
+            if not found:
+                new_events.append(new_event)
+                has_updates = True
 
-        self._logger.log('Filtered new events:')
-        self._logger.log(new_events)
+        self._events: [Event] = self._events + new_events
+        self._logger.info('New events:' + self._logger.stringify(new_events))
 
-        return new_events
+        for event in self._events:
+            if event.is_obsolete():
+                self._logger.info('Removing obsolete event %s from the list.' % str(event))
+                self._events.remove(event)
+                has_updates = True
+
+        return has_updates
 
     def build_tasks(self):
         all_tasks: [Task] = []
         for user in self._users.get_users():
             all_tasks = all_tasks + self._build_task_per_user(user)
+        all_tasks.sort(key=lambda task: task.get_event_time())
         return all_tasks
 
     def _build_task_per_user(self, user: User):

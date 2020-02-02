@@ -33,3 +33,6 @@ class User:
 
     def get_mattermost_login(self) -> str:
         return self._mattermost_login
+
+    def get_gcal_token_file_name(self) -> str:
+        return self._gcal_token_file

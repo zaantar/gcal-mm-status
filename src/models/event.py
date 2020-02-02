@@ -1,9 +1,11 @@
+from __future__ import annotations
 from dateutil import tz
 from dateutil.parser import parse
 from models.user import User
 from models.chat_state import ChatState
 from constants.mattermost_status import MattermostStatus
 from datetime import datetime
+import time_utils
 
 
 def google_date_to_datetime(google_date) -> datetime:
@@ -19,24 +21,26 @@ class Event:
     start: datetime
     end: datetime
     summary = ''
-    is_cancelled = False
+    _is_cancelled = False
     _user: User
     _chat_state: ChatState
 
-    def __init__(self, event_id, start, end, summary, user: User, is_cancelled=False):
+    def __init__(
+            self, event_id, start, end, summary, user: User, is_cancelled: bool = False,
+            is_declined: bool = False
+    ):
         self.id = event_id
         self.start = google_date_to_datetime(start)
         self.end = google_date_to_datetime(end)
         self.summary = summary
-        self.is_cancelled = is_cancelled
+        self._is_cancelled = is_cancelled
+        self._is_declined = is_declined
         self._user = user
 
         self._match_patterns()
 
     def __str__(self) -> str:
-        return "Event #%s from %s to %s: '%s'" % (
-            self.id, self.start, self.end, self.summary
-        )
+        return self.get_hash()
 
     def get_user(self) -> User:
         return self._user
@@ -52,3 +56,20 @@ class Event:
 
     def get_chat_state(self) -> ChatState:
         return self._chat_state
+
+    def is_same(self, other: Event) -> bool:
+        return self.id == other.id and self._user.get_id() == other.get_user().get_id()
+
+    def is_updated_by(self, new_version: Event) -> bool:
+        return self.is_same(new_version) and self.get_hash() != new_version.get_hash()
+
+    def get_hash(self) -> str:
+        return self.id \
+               + '|' + str(self.start.timestamp()) \
+               + '|' + str(self.end.timestamp()) \
+               + '|' + str(self._chat_state) \
+               + '|' + str(self._is_cancelled) \
+               + '|' + str(self._is_declined)
+
+    def is_obsolete(self) -> bool:
+        return self.end < time_utils.get_now_with_timezone()
