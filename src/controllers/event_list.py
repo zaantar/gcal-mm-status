@@ -75,16 +75,18 @@ class EventList:
         user_events = [
             event
             for event in self._events
-            if event.get_user().get_mattermost_login() == user.get_mattermost_login()
+            if event.get_user().get_id() == user.get_id()
         ]
+
+        actionable_events = [event for event in user_events if event.is_actionable()]
 
         state_changes = \
             [
                 {'type': TaskType.START, 'event': event, 'time': event.start}
-                for event in user_events
+                for event in actionable_events
             ] + [
                 {'type': TaskType.END, 'event': event, 'time': event.end}
-                for event in user_events
+                for event in actionable_events
             ]
         state_changes.sort(key=lambda change: change['time'])
 

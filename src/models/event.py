@@ -52,7 +52,10 @@ class Event:
                 break
 
     def is_actionable(self):
-        return self._chat_state is not None
+        return self._chat_state is not None \
+               and not self.is_obsolete() \
+               and not self._is_cancelled \
+               and not self._is_declined
 
     def get_chat_state(self) -> ChatState:
         return self._chat_state
