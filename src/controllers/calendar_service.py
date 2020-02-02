@@ -69,27 +69,30 @@ class CalendarService:
 
         # Call the Calendar API
         now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-        self._logger.log('Getting the upcoming 10 events')
+        self._logger.info('Getting the upcoming 10 events', 1)
         try:
             events_result = service.events().list(
                 calendarId='primary',
                 timeMin=now,
                 maxResults=10,
                 singleEvents=True,
-                orderBy='startTime'
+                orderBy='startTime',
+                showDeleted=True
             ).execute()
             events = events_result.get('items', [])
         except google.auth.exceptions.TransportError as exc:
-            self._logger.error('A transport error while fetching upcoming events: %s' % repr(exc))
+            self._logger.error('A transport error while fetching upcoming events: %s' % repr(exc), -1)
             return []
-        except:
-            self._logger.error('Error while fetching upcoming events: %s' % repr(sys.exc_info()[0]))
-            return []
+        # except:
+        #    self._logger.error('Error while fetching upcoming events: %s' % repr(sys.exc_info()[0]))
+        #    return []
+        self._logger.untab()
 
         formatted_events = []
         if not events:
             return []
         for event in events:
+            is_declined = False
             if 'attendees' in event:
                 # Eventually, this should be moved to Event itself and taken into account when handling
                 # updated events (changed time or acceptance status).
@@ -100,10 +103,12 @@ class CalendarService:
                     self_attendees
                 ))
                 if len(declined_self_attendees) > 0 and len(declined_self_attendees) == len(self_attendees):
-                    continue
+                    is_declined = True
+
+            is_cancelled = ('status' in event and 'cancelled' == event['status'])
 
             formatted_events.append(
-                Event(event['id'], event['start'], event['end'], event['summary'], user)
+                Event(event['id'], event['start'], event['end'], event['summary'], user, is_cancelled, is_declined)
             )
 
         return formatted_events

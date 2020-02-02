@@ -31,7 +31,7 @@ class EventList:
         for user in self._users.get_users():
             self._logger.log('Retrieving upcoming events for user %s...' % user.get_mattermost_login())
             upcoming_user_events = self._calendar_service.get_upcoming_events(user)
-            self._logger.log(upcoming_user_events, LogLevel.DEBUG)
+            self._logger.debug("Retrieved upcoming events: \n%s" % self._logger.stringify(upcoming_user_events))
             upcoming_events = upcoming_events + upcoming_user_events
 
         new_events: [Event] = []
@@ -54,7 +54,7 @@ class EventList:
                 has_updates = True
 
         self._events: [Event] = self._events + new_events
-        self._logger.info('New events:' + self._logger.stringify(new_events))
+        self._logger.info("New events:\n" + self._logger.stringify(new_events))
 
         for event in self._events:
             if event.is_obsolete():
