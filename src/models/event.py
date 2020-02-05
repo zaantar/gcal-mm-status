@@ -21,9 +21,10 @@ class Event:
     start: datetime
     end: datetime
     summary = ''
-    _is_cancelled = False
+    _is_cancelled: bool
+    _is_declined: bool
     _user: User
-    _chat_state: ChatState
+    _chat_state: ChatState | None = None
 
     def __init__(
             self, event_id, start, end, summary, user: User, is_cancelled: bool = False,
@@ -57,7 +58,7 @@ class Event:
                and not self._is_cancelled \
                and not self._is_declined
 
-    def get_chat_state(self) -> ChatState:
+    def get_chat_state(self) -> ChatState | None:
         return self._chat_state
 
     def is_same(self, other: Event) -> bool:
@@ -67,10 +68,11 @@ class Event:
         return self.is_same(new_version) and self.get_hash() != new_version.get_hash()
 
     def get_hash(self) -> str:
+        chat_state_hash = str(self._chat_state) if self._chat_state is not None else '---'
         return self.id \
                + '|' + str(self.start.timestamp()) \
                + '|' + str(self.end.timestamp()) \
-               + '|' + str(self._chat_state) \
+               + '|' + chat_state_hash \
                + '|' + str(self._is_cancelled) \
                + '|' + str(self._is_declined)
 
