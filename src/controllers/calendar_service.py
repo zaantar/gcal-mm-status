@@ -13,6 +13,7 @@ from models.user import User
 from models.event import Event
 from controllers.logger import Logger
 import sys
+import http.client
 
 # If modifying these scopes, delete the token.pickle.* files.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
@@ -80,12 +81,12 @@ class CalendarService:
                 showDeleted=True
             ).execute()
             events = events_result.get('items', [])
-        except google.auth.exceptions.TransportError as exc:
-            self._logger.error('A transport error while fetching upcoming events: %s' % repr(exc), -1)
+        except (
+            ConnectionResetError, ConnectionAbortedError, google.auth.exceptions.TransportError,
+            ConnectionError, ConnectionRefusedError, http.client.RemoteDisconnected
+        ) as exc:
+            self._logger.error('A network-related error occurred while fetching upcoming events: %s' % repr(exc), -1)
             return []
-        # except:
-        #    self._logger.error('Error while fetching upcoming events: %s' % repr(sys.exc_info()[0]))
-        #    return []
         self._logger.untab()
 
         formatted_events = []
