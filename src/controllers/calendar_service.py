@@ -14,6 +14,7 @@ from models.event import Event
 from controllers.logger import Logger
 import sys
 import http.client
+import socket
 
 # If modifying these scopes, delete the token.pickle.* files.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
@@ -83,7 +84,7 @@ class CalendarService:
             events = events_result.get('items', [])
         except (
             ConnectionResetError, ConnectionAbortedError, google.auth.exceptions.TransportError,
-            ConnectionError, ConnectionRefusedError, http.client.RemoteDisconnected
+            ConnectionError, ConnectionRefusedError, http.client.RemoteDisconnected, socket.gaierror
         ) as exc:
             self._logger.error('A network-related error occurred while fetching upcoming events: %s' % repr(exc), -1)
             return []

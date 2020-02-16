@@ -53,8 +53,11 @@ class Task:
             return
 
         self._logger.info('Performing task %s...' % str(self), 1)
-        self._chat_state.apply(self._user_login, self._mattermost_service)
-        self._is_done = True
+        is_chat_state_applied = self._chat_state.apply(self._user_login, self._mattermost_service)
+        if not is_chat_state_applied:
+            self._logger.error('Task could not have been performed successfully. Will attempt again.')
+            # todo attempt only a limited amount of attempts
+        self._is_done = is_chat_state_applied
         self._logger.untab()
 
     def get_event_time(self) -> datetime:

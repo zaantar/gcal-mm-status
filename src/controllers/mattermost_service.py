@@ -1,7 +1,7 @@
 import mattermostdriver
 import json
 import requests
-
+import sys
 from constants.log_level import LogLevel
 from controllers.logger import Logger
 
@@ -67,34 +67,48 @@ class MattermostService:
 
     def set_user_status(self, user_login, status):
         self._logger.log('Setting status of user "%s" to "%s"...' % (user_login, status.value), LogLevel.INFO)
-        user_id = self._get_user_mattermost_id(user_login)
-        data = {
-            'status': status.value,
-            'user_id': user_id
-        }
-        self._logger.log('Making the request...', LogLevel.DEBUG)
-        response = self._driver.client.make_request('put', '/users/%s/status' % user_id, data=json.dumps(data))
-        return self._parse_response(response)
+        try:
+            user_id = self._get_user_mattermost_id(user_login)
+            data = {
+                'status': status.value,
+                'user_id': user_id
+            }
+            self._logger.log('Making the request...', LogLevel.DEBUG)
+            response = self._driver.client.make_request('put', '/users/%s/status' % user_id, data=json.dumps(data))
+            return self._parse_response(response)
+        except:
+            self._logger.error(
+                'A network-related error occurred while setting user stats: %s'
+                % str(sys.exc_info()[0]), -1
+            )
+            return False
 
     def set_user_suffix(self, user_login, suffix):
         self._logger.log(
             'Setting the nickname suffix of user "%s" to "%s"...' % (user_login, suffix),
             LogLevel.INFO
         )
-        user = self._get_user(user_login)
-        if user is None:
+        try:
+            user = self._get_user(user_login)
+            if user is None:
+                return False
+            prev_nickname = user['nickname']
+            nickname_parts = parse_nickname_parts(prev_nickname)
+            new_nickname = nickname_parts['base'] + '|' + suffix
+            self._logger.log('Making the request...', LogLevel.DEBUG)
+            response = self._driver.client.make_request(
+                'put',
+                '/users/%s/patch' % self._get_user_mattermost_id(user_login),
+                data=json.dumps({'nickname': new_nickname})
+            )
+            user['nickname'] = new_nickname
+            return self._parse_response(response)
+        except:
+            self._logger.error(
+                'A network-related error occurred while setting user nickname: %s'
+                % str(sys.exc_info()[0]), -1
+            )
             return False
-        prev_nickname = user['nickname']
-        nickname_parts = parse_nickname_parts(prev_nickname)
-        new_nickname = nickname_parts['base'] + '|' + suffix
-        self._logger.log('Making the request...', LogLevel.DEBUG)
-        response = self._driver.client.make_request(
-            'put',
-            '/users/%s/patch' % self._get_user_mattermost_id(user_login),
-            data=json.dumps({'nickname': new_nickname})
-        )
-        user['nickname'] = new_nickname
-        return self._parse_response(response)
 
     def get_user_suffix(self, user_login):
         user = self._get_user(user_login)

@@ -14,5 +14,8 @@ class ChatState:
         return '%s | %s' % (self._suffix, self._status.name)
 
     def apply(self, user_login: str, mattermost_service: MattermostService):
-        mattermost_service.set_user_status(user_login, self._status)
-        mattermost_service.set_user_suffix(user_login, self._suffix)
+        is_status_applied = mattermost_service.set_user_status(user_login, self._status)
+        if not is_status_applied:
+            return False
+        is_suffix_applied = mattermost_service.set_user_suffix(user_login, self._suffix)
+        return is_suffix_applied
