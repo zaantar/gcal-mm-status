@@ -19,7 +19,7 @@ the Google user.
 1. Obtain a file with Google API credentials (from [here](https://developers.google.com/calendar/quickstart/python)) 
     and store it in `credentials/google.json`.
 2. Provide Mattermost configuration in `credential/mattermost.json` in this format:
-    ```json
+    ```
     {
       "server": "chat.server.com",
       "token": "API token goes here"
@@ -33,7 +33,7 @@ the Google user.
 ## Configuration
 
 The configuration file `settings.json` should have the following structure:
-```json
+```
 {
   "user_settings": {
 
