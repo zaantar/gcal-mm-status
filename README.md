@@ -4,6 +4,8 @@ This application reads events from Google Calendar and, according to defined pat
 on Mattermost. It allows for handling multiple users within one Mattermost server, where each one can have their own calendar 
 and settings.
 
+![](docs/screenshot.png)
+
 ## Requirements
 
 1. Python 3.7 or higher and `pip` in the corresponding version.
