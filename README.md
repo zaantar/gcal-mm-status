@@ -28,7 +28,7 @@ the Google user.
 3. Configure the application by editing `settings.json` in its root directory, according to instructions below.
 4. Upon the first execution, the access to each Google user whose calendar is being accessed may be requested.
 
-**
+**Start the application by running ./run.sh** (in Linux, otherwise run `python __init__.py` from the `src` directory)
 
 ## Configuration
 
