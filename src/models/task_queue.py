@@ -6,6 +6,7 @@ from controllers.mattermost_service import MattermostService
 
 
 class TaskQueue:
+    """Queue of upcoming tasks."""
     _tasks: [Task] = []
     _logger: Logger
     _mattermost_service: MattermostService
@@ -15,12 +16,19 @@ class TaskQueue:
         self._mattermost_service = mattermost_service
 
     def add(self, task: Task):
+        """Add one new task to the queue."""
         self._tasks.append(task)
 
     def set(self, tasks: [Task]):
+        """Overwrite the whole queue with a new set of tasks."""
         self._tasks = tasks
 
     def get_ready_tasks(self):
+        """
+        Get up to one task for each user that is ready to be performed.
+
+        Also clean the queue from tasks that request to be removed.
+        """
         self._tasks.sort(key=lambda current_task: current_task.get_event_time())
         for task in self._tasks:
             if task.action_to_perform() == TaskAction.REMOVE:

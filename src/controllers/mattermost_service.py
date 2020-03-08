@@ -1,6 +1,6 @@
 import mattermostdriver
 import json
-import requests
+from requests import auth
 import sys
 from constants.log_level import LogLevel
 from controllers.logger import Logger
@@ -16,6 +16,9 @@ def parse_nickname_parts(nickname):
 
 
 class MattermostService:
+    """
+    Service that fully encapsulates the interaction with Mattermost.
+    """
     _logger: Logger
     _driver: mattermostdriver.Driver
     _user_cache = {}
@@ -30,7 +33,7 @@ class MattermostService:
 
         self._logger.log('Interacting with a Mattermost server at %s...' % server_url, LogLevel.INFO)
 
-        class TokenAuth(requests.auth.AuthBase):
+        class TokenAuth(auth.AuthBase):
             def __call__(self, r):
                 # Implement my authentication
                 r.headers['Authorization'] = "Bearer %s" % token
@@ -65,8 +68,9 @@ class MattermostService:
         user_id = user['id']
         return user_id
 
-    def set_user_status(self, user_login, status):
+    def set_user_status(self, user_login, status) -> bool:
         self._logger.log('Setting status of user "%s" to "%s"...' % (user_login, status.value), LogLevel.INFO)
+        # noinspection PyBroadException
         try:
             user_id = self._get_user_mattermost_id(user_login)
             data = {
@@ -83,11 +87,12 @@ class MattermostService:
             )
             return False
 
-    def set_user_suffix(self, user_login, suffix):
+    def set_user_suffix(self, user_login, suffix) -> bool:
         self._logger.log(
             'Setting the nickname suffix of user "%s" to "%s"...' % (user_login, suffix),
             LogLevel.INFO
         )
+        # noinspection PyBroadException
         try:
             user = self._get_user(user_login)
             if user is None:
@@ -110,7 +115,7 @@ class MattermostService:
             )
             return False
 
-    def get_user_suffix(self, user_login):
+    def get_user_suffix(self, user_login) -> str:
         user = self._get_user(user_login)
         if user is None:
             return ''

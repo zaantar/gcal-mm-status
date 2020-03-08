@@ -2,6 +2,7 @@ import re
 
 
 class EventPattern:
+    """Represents a pattern to match potentially actionable calendar events."""
     pattern = ''
     flags = []
     suffix = ''
@@ -13,7 +14,7 @@ class EventPattern:
         self.suffix = pattern_settings['suffix']
         self.status = pattern_settings['status']
 
-    def get_re_flags(self):
+    def _get_re_flags(self):
         flag_values = [eval('re.%s' % flag_name) for flag_name in self.flags]
         result = 0
         for flag_value in flag_values:
@@ -21,6 +22,6 @@ class EventPattern:
         return result
 
     def is_match(self, event_summary):
-        regex_pattern = re.compile(self.pattern, self.get_re_flags())
+        regex_pattern = re.compile(self.pattern, self._get_re_flags())
         match = re.search(regex_pattern, event_summary)
         return match is not None

@@ -1,3 +1,8 @@
+"""
+This is just a testing file for the implementation of an unix daemon.
+
+Which may or may not be fully implemented later.
+"""
 import daemon
 from log import log, set_log_level
 from constants.log_level import LogLevel as LogLevel

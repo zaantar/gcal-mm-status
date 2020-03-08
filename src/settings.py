@@ -1,3 +1,4 @@
+"""Provides access to application settings."""
 import json
 from models.user import User
 

@@ -3,6 +3,9 @@ from datetime import datetime
 
 
 class Logger:
+    """
+    Simple logger class with indentation and the ability to stringify more complex data structures.
+    """
     _level_threshold: LogLevel
     _indentation: int = 0
 

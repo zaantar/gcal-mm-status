@@ -3,6 +3,11 @@ from controllers.mattermost_service import MattermostService
 
 
 class ChatState:
+    """
+    Represents the state of a Mattermost chat: Status and nickname suffix.
+
+    Uses the Mattermost service to apply it.
+    """
     _suffix: str
     _status: MattermostStatus
 

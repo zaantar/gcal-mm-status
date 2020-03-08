@@ -1,10 +1,10 @@
+"""Main application file, with the program loop."""
 import time
 from datetime import datetime, timedelta
 from constants.log_level import LogLevel as LogLevel
 from models.task_queue import TaskQueue
 import settings
 from constants import constants
-from constants.task_action import TaskAction
 from models.user_list import UserList
 from controllers.event_list import EventList
 from controllers.logger import Logger
@@ -49,6 +49,7 @@ def main():
 
     logger.set_level_threshold(LogLevel.DEBUG)
     logger.log('Starting the main loop...', LogLevel.DEBUG)
+
     while True:
         logger.log('Loop iteration', LogLevel.DEBUG, 1)
         if need_calendar_check():

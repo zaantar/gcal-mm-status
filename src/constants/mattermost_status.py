@@ -3,6 +3,9 @@ import enum
 
 
 class MattermostStatus(enum.Enum):
+    """
+    Available statuses in Mattermost.
+    """
     ONLINE = 'online'
     AWAY = 'away'
     DND = 'dnd'

@@ -1,3 +1,6 @@
+"""
+Functions for working with times and time delta.
+"""
 from datetime import datetime, timedelta
 import dateutil
 

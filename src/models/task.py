@@ -8,6 +8,10 @@ from constants.task_type import TaskType
 
 
 class Task:
+    """
+    Single task - one thing that should be done at one particular time, which can be either a beginning or
+    an end of a calendar event.
+    """
     _event_time: datetime
     _user_login: str
     _logger: Logger
@@ -17,7 +21,10 @@ class Task:
     _type: TaskType
 
     def __init__(
-            self, event_time: datetime, user_login: str, chat_state: ChatState,
+            self,
+            event_time: datetime,
+            user_login: str,
+            chat_state: ChatState,
             task_type: TaskType,
             logger: Logger,
             mattermost_service: MattermostService
@@ -48,6 +55,9 @@ class Task:
         return TaskAction.WAIT
 
     def do_action(self):
+        """
+        If the task is ready, apply the chat state.
+        """
         if TaskAction.START != self.action_to_perform():
             self._logger.warning('%s: There is no action to perform' % str(self))
             return

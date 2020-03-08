@@ -1,3 +1,4 @@
+daemon
 deprecated
 lockfile
 python-daemon

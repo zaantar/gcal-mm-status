@@ -5,6 +5,9 @@ from constants.mattermost_status import MattermostStatus
 
 
 class User:
+    """
+    Represents a single user, identified by its Mattermost username.
+    """
     _mattermost_login = ''
     _gcal_token_file = ''
     _patterns: List[EventPattern] = []

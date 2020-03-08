@@ -1,14 +1,20 @@
+"""
+@deprecated
+"""
+
 from constants.log_level import LogLevel
 from deprecated import deprecated
 
 current_log_level = LogLevel.WARNING
 
 
+@deprecated('Use a logger object instead.')
 def set_log_level(new_level):
     global current_log_level
     current_log_level = new_level
 
 
+@deprecated('Use a logger object instead.')
 def stringify(to_stringify):
     if list == type(to_stringify):
         return "\n".join([stringify(item) for item in to_stringify])
